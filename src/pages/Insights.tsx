@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Brain, Lightbulb, TrendingUp, Clock } from "lucide-react";
-import { getAnalytics, getAISuggestions } from "@/lib/store";
+import { Brain, Lightbulb, TrendingUp, Clock, RefreshCw } from "lucide-react";
+import { getAnalytics } from "@/lib/store";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { Button } from "@/components/ui/button";
 
 export default function Insights() {
   const [analytics, setAnalytics] = useState(getAnalytics());
-  const [suggestions, setSuggestions] = useState(getAISuggestions());
+  const { suggestions, isLoading, error, fetchAISuggestions } = useAISuggestions();
 
   useEffect(() => {
     const interval = setInterval(() => {
       setAnalytics(getAnalytics());
-      setSuggestions(getAISuggestions());
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -28,11 +29,27 @@ export default function Insights() {
           <Brain className="w-8 h-8 text-primary" />
           AI Insights
         </h1>
-        <p className="text-muted-foreground mt-1">Smart suggestions based on your activity</p>
+        <p className="text-muted-foreground mt-1">Smart suggestions powered by AI</p>
       </div>
 
       {/* AI Suggestions */}
       <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="font-display font-semibold text-lg">🤖 Personalized AI Analysis</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchAISuggestions}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+            {isLoading ? "Analyzing..." : "Analyze My Productivity"}
+          </Button>
+        </div>
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
         {suggestions.map((s, i) => (
           <motion.div
             key={i}
