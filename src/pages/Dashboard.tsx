@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react";
-import { CheckCircle2, Clock, ListTodo, TrendingUp } from "lucide-react";
+import { CheckCircle2, Clock, ListTodo, TrendingUp, RefreshCw, Sparkles } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion } from "framer-motion";
 import StatCard from "@/components/StatCard";
-import { getAnalytics, getAISuggestions } from "@/lib/store";
+import { getAnalytics } from "@/lib/store";
+import { useAISuggestions } from "@/hooks/useAISuggestions";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const [analytics, setAnalytics] = useState(getAnalytics());
-  const [suggestions, setSuggestions] = useState(getAISuggestions());
+  const { suggestions, isLoading, fetchAISuggestions } = useAISuggestions();
 
   useEffect(() => {
     const interval = setInterval(() => {
       setAnalytics(getAnalytics());
-      setSuggestions(getAISuggestions());
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -81,12 +82,33 @@ export default function Dashboard() {
       </div>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 border-l-4 border-l-primary">
-        <h3 className="font-display font-semibold mb-3 flex items-center gap-2">
-          🤖 AI Suggestions
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-display font-semibold flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            AI Suggestions
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={fetchAISuggestions}
+            disabled={isLoading}
+            className="gap-2 text-xs"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            {isLoading ? "Analyzing..." : "Get AI Insights"}
+          </Button>
+        </div>
         <ul className="space-y-2">
           {suggestions.map((s, i) => (
-            <li key={i} className="text-sm text-muted-foreground">{s}</li>
+            <motion.li
+              key={i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="text-sm text-muted-foreground"
+            >
+              {s}
+            </motion.li>
           ))}
         </ul>
       </motion.div>
